@@ -1,0 +1,637 @@
+{
+  "info": {
+    "name": "Marketplace API",
+    "description": "API REST Symfony 8 - Marketplace de services",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000", "type": "string" },
+    { "key": "token",    "value": "", "type": "string" },
+    { "key": "refresh_token", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@test.com\",\n  \"password\": \"Password123!\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"roles\": [\"ROLE_USER\"]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "pm.test('Has id', () => pm.expect(pm.response.json().id).to.exist);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register (Prestataire)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"provider@test.com\",\n  \"password\": \"Password123!\",\n  \"firstName\": \"Bob\",\n  \"lastName\": \"Provider\",\n  \"roles\": [\"ROLE_PRESTATAIRE\"]\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"client@test.com\",\n  \"password\": \"Password123!\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Has accessToken', () => pm.expect(json.accessToken).to.exist);",
+                  "if (json.accessToken) {",
+                  "  pm.collectionVariables.set('token', json.accessToken);",
+                  "  pm.collectionVariables.set('refresh_token', json.refreshToken);",
+                  "  console.log('Token saved!');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login (Prestataire)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"provider@test.com\",\n  \"password\": \"Password123!\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.accessToken) {",
+                  "  pm.collectionVariables.set('token', json.accessToken);",
+                  "  pm.collectionVariables.set('refresh_token', json.refreshToken);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login (Admin)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@test.com\",\n  \"password\": \"Password123!\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.accessToken) pm.collectionVariables.set('token', json.accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/refresh",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "if (json.accessToken) pm.collectionVariables.set('token', json.accessToken);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Utilisateurs",
+      "item": [
+        {
+          "name": "Mon profil",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/user/profile",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has email', () => pm.expect(pm.response.json().email).to.exist);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Modifier mon profil",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/api/user/profile",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Alice Modifié\",\n  \"lastName\": \"Nouveau\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Voir un utilisateur",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/users/USER_ID_ICI",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Services",
+      "item": [
+        {
+          "name": "Lister tous les services",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/services",
+              "host": ["{{base_url}}"],
+              "path": ["api", "services"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Services - Filtrer par catégorie",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/services?category=développement&priceMax=2000",
+              "host": ["{{base_url}}"],
+              "path": ["api", "services"],
+              "query": [
+                { "key": "category", "value": "développement" },
+                { "key": "priceMax", "value": "2000" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Services - Recherche",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/services?search=symfony",
+              "host": ["{{base_url}}"],
+              "path": ["api", "services"],
+              "query": [{ "key": "search", "value": "symfony" }]
+            }
+          }
+        },
+        {
+          "name": "Voir un service",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/services/SERVICE_ID_ICI"
+          }
+        },
+        {
+          "name": "Créer un service (PRESTATAIRE)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/services",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Développement Symfony\",\n  \"description\": \"Je crée des API REST professionnelles avec Symfony 8\",\n  \"category\": \"développement\",\n  \"price\": 1500\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.collectionVariables.set('service_id', json.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Modifier un service",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/api/services/{{service_id}}",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Développement Symfony - Expert\",\n  \"price\": 1800\n}"
+            }
+          }
+        },
+        {
+          "name": "Supprimer un service (archiver)",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/api/services/{{service_id}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 204', () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Demandes",
+      "item": [
+        {
+          "name": "Lister mes demandes",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/demandes",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Voir une demande",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/demandes/{{demande_id}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Créer une demande (USER)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/demandes",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Besoin développeur Symfony\",\n  \"description\": \"Je cherche un expert pour créer une API REST marketplace avec Symfony 8\",\n  \"category\": \"développement\",\n  \"budget\": 2000\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.collectionVariables.set('demande_id', json.id);",
+                  "pm.test('Status ouverte', () => pm.expect(json.status).to.equal('ouverte'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Modifier une demande",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/api/demandes/{{demande_id}}",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"budget\": 2500,\n  \"title\": \"Besoin développeur Symfony - Urgent\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Fermer une demande",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/api/demandes/{{demande_id}}",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"fermée\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Supprimer une demande",
+          "request": {
+            "method": "DELETE",
+            "url": "{{base_url}}/api/demandes/{{demande_id}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Propositions",
+      "item": [
+        {
+          "name": "Soumettre une proposition (PRESTATAIRE)",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/demandes/{{demande_id}}/propositions",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 1900,\n  \"message\": \"Je peux livrer ce projet en 3 semaines avec tests unitaires et documentation inclus. J'ai 5 ans d'expérience Symfony.\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', () => pm.response.to.have.status(201));",
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.collectionVariables.set('proposition_id', json.id);",
+                  "pm.test('Status en_attente', () => pm.expect(json.status).to.equal('en_attente'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Proposition avec service lié",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/demandes/{{demande_id}}/propositions",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 1500,\n  \"message\": \"Je propose mon service Symfony déjà référencé sur la plateforme.\",\n  \"serviceId\": \"{{service_id}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Lister mes propositions",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/propositions",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Is array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Voir une proposition",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/propositions/{{proposition_id}}",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }]
+          }
+        },
+        {
+          "name": "Accepter une proposition (demandeur)",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/api/propositions/{{proposition_id}}",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"acceptée\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Proposition acceptée', () => pm.expect(pm.response.json().status).to.equal('acceptée'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refuser une proposition (demandeur)",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/api/propositions/{{proposition_id}}",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"refusée\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Annuler une proposition (prestataire)",
+          "request": {
+            "method": "PUT",
+            "url": "{{base_url}}/api/propositions/{{proposition_id}}",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"annulée\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tests d'erreur",
+      "item": [
+        {
+          "name": "401 - Sans token",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/user/profile"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "400 - Email invalide",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/register",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"pas-un-email\",\n  \"password\": \"123\",\n  \"firstName\": \"X\",\n  \"lastName\": \"Y\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "pm.test('Has violations', () => pm.expect(pm.response.json().violations).to.exist);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "401 - Mauvais password",
+          "request": {
+            "method": "POST",
+            "url": "{{base_url}}/api/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"client@test.com\",\n  \"password\": \"MauvaisMotDePasse!\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "404 - Service inexistant",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/services/00000000-0000-0000-0000-000000000000"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

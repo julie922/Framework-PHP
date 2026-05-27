@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Marketplace API — Accueil{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h1>Marketplace API</h1>
+    <p>Plateforme de mise en relation entre clients et prestataires de services.</p>
+    <p class="hero-sub">Interface de test — API Symfony 8</p>
+    <div class="hero-buttons">
+        {% if user %}
+            <a href="/dashboard" class="btn">Mon Dashboard</a>
+            <a href="/services" class="btn btn-outline">Services</a>
+            <a href="/demandes" class="btn btn-outline">Demandes</a>
+        {% else %}
+            <a href="/login" class="btn">Se connecter</a>
+            <a href="/register" class="btn btn-outline">Créer un compte</a>
+            <a href="/services" class="btn btn-grey">Voir les services</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <h2>Services</h2>
+        <p>Parcourez les services proposés par nos prestataires : développement, design, marketing…</p>
+        <a href="/services" class="btn btn-outline" style="margin-top:12px">Voir les services</a>
+    </div>
+    <div class="card">
+        <h2>Demandes</h2>
+        <p>Consultez les demandes de clients et proposez vos services aux projets qui vous intéressent.</p>
+        <a href="/demandes" class="btn btn-outline" style="margin-top:12px">Voir les demandes</a>
+    </div>
+</div>
+{% endblock %}

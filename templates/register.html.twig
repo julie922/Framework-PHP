@@ -1,0 +1,62 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscription — Marketplace API{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="form-card">
+        <h1>Créer un compte</h1>
+
+        {% if error %}
+            <div class="alert-error">{{ error }}</div>
+        {% endif %}
+
+        {% if success %}
+            <div class="alert-success">
+                {{ success }}
+                <br><a href="/login">Se connecter maintenant →</a>
+            </div>
+        {% endif %}
+
+        {% if not success %}
+        <form method="post" action="/register">
+            <div class="grid-2">
+                <div class="field">
+                    <label for="firstName">Prénom</label>
+                    <input type="text" id="firstName" name="firstName" required placeholder="Alice" minlength="2">
+                </div>
+                <div class="field">
+                    <label for="lastName">Nom</label>
+                    <input type="text" id="lastName" name="lastName" required placeholder="Dupont" minlength="2">
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required placeholder="vous@exemple.com">
+            </div>
+
+            <div class="field">
+                <label for="password">Mot de passe</label>
+                <input type="password" id="password" name="password" required placeholder="Min. 8 caractères, 1 maj, 1 min, 1 chiffre" minlength="8">
+                <small style="color:#888">Exemple : Password123!</small>
+            </div>
+
+            <div class="field">
+                <label for="role">Rôle</label>
+                <select id="role" name="role">
+                    <option value="ROLE_USER">Client (ROLE_USER)</option>
+                    <option value="ROLE_PRESTATAIRE">Prestataire (ROLE_PRESTATAIRE)</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn" style="width:100%">Créer mon compte</button>
+        </form>
+        {% endif %}
+
+        <p class="form-footer">
+            Déjà un compte ? <a href="/login">Se connecter</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

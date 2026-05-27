@@ -1,0 +1,84 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard — Marketplace API{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Dashboard</h1>
+    <a href="/logout" class="btn btn-outline">Déconnexion</a>
+</div>
+
+<div class="card user-card">
+    <div>
+        <strong>{{ user.firstName }} {{ user.lastName }}</strong>
+        <span style="color:#666; margin-left:10px">{{ user.email }}</span>
+    </div>
+    <div style="margin-top:6px">
+        {% for role in user.roles %}
+            <span class="badge
+                {% if role == 'ROLE_ADMIN' %}badge-pending
+                {% elseif role == 'ROLE_PRESTATAIRE' %}badge-active
+                {% else %}badge-open{% endif %}">
+                {{ role }}
+            </span>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="grid-2">
+    <div>
+        <div class="section-header">
+            <h2>Services récents</h2>
+            {% if 'ROLE_PRESTATAIRE' in user.roles or 'ROLE_ADMIN' in user.roles %}
+                <a href="/services" class="btn btn-sm">+ Créer un service</a>
+            {% endif %}
+        </div>
+
+        {% if services is empty %}
+            <p class="empty-state">Aucun service pour l'instant.</p>
+        {% else %}
+            {% for service in services %}
+                <div class="item">
+                    <div class="item-info">
+                        <h3>{{ service.title }}</h3>
+                        <p>{{ service.price }} € · {{ service.category }}</p>
+                    </div>
+                    <span class="badge {{ service.status == 'active' ? 'badge-active' : 'badge-inactive' }}">
+                        {{ service.status }}
+                    </span>
+                </div>
+            {% endfor %}
+            <a href="/services" style="font-size:0.85rem">Voir tous les services →</a>
+        {% endif %}
+    </div>
+
+    <div>
+        <div class="section-header">
+            <h2>Demandes récentes</h2>
+            {% if 'ROLE_USER' in user.roles %}
+                <a href="/demandes" class="btn btn-sm">+ Créer une demande</a>
+            {% endif %}
+        </div>
+
+        {% if demandes is empty %}
+            <p class="empty-state">Aucune demande pour l'instant.</p>
+        {% else %}
+            {% for demande in demandes %}
+                <div class="item">
+                    <div class="item-info">
+                        <h3>{{ demande.title }}</h3>
+                        <p>{{ demande.budget }} € · {{ demande.category }}</p>
+                    </div>
+                    <span class="badge
+                        {% if demande.status == 'ouverte' %}badge-open
+                        {% elseif demande.status == 'en_cours' %}badge-pending
+                        {% else %}badge-inactive{% endif %}">
+                        {{ demande.status }}
+                    </span>
+                </div>
+            {% endfor %}
+            <a href="/demandes" style="font-size:0.85rem">Voir toutes les demandes →</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

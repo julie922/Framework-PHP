@@ -1,0 +1,80 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Demandes — Marketplace API{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Demandes</h1>
+    {% if 'ROLE_USER' in user.roles %}
+        <a href="#create-form" class="btn">+ Nouvelle demande</a>
+    {% endif %}
+</div>
+
+{% if error %}
+    <div class="alert-error">{{ error }}</div>
+{% endif %}
+{% if success %}
+    <div class="alert-success">{{ success }}</div>
+{% endif %}
+
+{% if 'ROLE_USER' in user.roles %}
+<div class="card" id="create-form">
+    <h2>Créer une demande</h2>
+    <form method="post" action="/demandes">
+        <div class="grid-2">
+            <div class="field">
+                <label for="title">Titre</label>
+                <input type="text" id="title" name="title" required placeholder="Ex: Besoin développeur Symfony">
+            </div>
+            <div class="field">
+                <label for="category">Catégorie</label>
+                <input type="text" id="category" name="category" required placeholder="développement, design, marketing…">
+            </div>
+        </div>
+        <div class="field">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" required rows="3" placeholder="Décrivez votre besoin…"></textarea>
+        </div>
+        <div class="field" style="max-width:200px">
+            <label for="budget">Budget (€)</label>
+            <input type="number" id="budget" name="budget" required min="0" step="0.01" placeholder="1000">
+        </div>
+        <button type="submit" class="btn">Créer la demande</button>
+    </form>
+</div>
+{% endif %}
+
+{% if demandes is empty %}
+    <p class="empty-state">Aucune demande disponible.</p>
+{% else %}
+    {% for demande in demandes %}
+        <div class="item">
+            <div class="item-info">
+                <h3>{{ demande.title }}</h3>
+                <p>
+                    Budget : {{ demande.budget }} € &middot;
+                    {{ demande.category }} &middot;
+                    par {{ demande.demandeur.firstName }} {{ demande.demandeur.lastName }}
+                </p>
+                {% if demande.description is defined %}
+                    <p style="margin-top:4px;color:#555">{{ demande.description|slice(0,100) }}{% if demande.description|length > 100 %}…{% endif %}</p>
+                {% endif %}
+            </div>
+            <div class="item-actions">
+                <span class="badge
+                    {% if demande.status == 'ouverte' %}badge-open
+                    {% elseif demande.status == 'en_cours' %}badge-pending
+                    {% else %}badge-inactive{% endif %}">
+                    {{ demande.status }}
+                </span>
+                {% if demande.demandeur.id == user.id or 'ROLE_ADMIN' in user.roles %}
+                    <form method="post" action="/demandes/{{ demande.id }}/delete"
+                          onsubmit="return confirm('Supprimer cette demande ?')">
+                        <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+{% endif %}
+{% endblock %}

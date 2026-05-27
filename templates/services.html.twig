@@ -1,0 +1,77 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Services — Marketplace API{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Services</h1>
+    {% if 'ROLE_PRESTATAIRE' in user.roles or 'ROLE_ADMIN' in user.roles %}
+        <a href="#create-form" class="btn">+ Nouveau service</a>
+    {% endif %}
+</div>
+
+{% if error %}
+    <div class="alert-error">{{ error }}</div>
+{% endif %}
+{% if success %}
+    <div class="alert-success">{{ success }}</div>
+{% endif %}
+
+{% if 'ROLE_PRESTATAIRE' in user.roles or 'ROLE_ADMIN' in user.roles %}
+<div class="card" id="create-form">
+    <h2>Créer un service</h2>
+    <form method="post" action="/services">
+        <div class="grid-2">
+            <div class="field">
+                <label for="title">Titre</label>
+                <input type="text" id="title" name="title" required placeholder="Ex: Développement Symfony">
+            </div>
+            <div class="field">
+                <label for="category">Catégorie</label>
+                <input type="text" id="category" name="category" required placeholder="développement, design, marketing…">
+            </div>
+        </div>
+        <div class="field">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" required rows="3" placeholder="Décrivez votre service…"></textarea>
+        </div>
+        <div class="field" style="max-width:200px">
+            <label for="price">Prix (€)</label>
+            <input type="number" id="price" name="price" required min="0" step="0.01" placeholder="500">
+        </div>
+        <button type="submit" class="btn">Créer le service</button>
+    </form>
+</div>
+{% endif %}
+
+{% if services is empty %}
+    <p class="empty-state">Aucun service disponible.</p>
+{% else %}
+    {% for service in services %}
+        <div class="item">
+            <div class="item-info">
+                <h3>{{ service.title }}</h3>
+                <p>
+                    {{ service.price }} € &middot;
+                    {{ service.category }} &middot;
+                    par {{ service.prestataire.firstName }} {{ service.prestataire.lastName }}
+                </p>
+                {% if service.description is defined %}
+                    <p style="margin-top:4px;color:#555">{{ service.description|slice(0,100) }}{% if service.description|length > 100 %}…{% endif %}</p>
+                {% endif %}
+            </div>
+            <div class="item-actions">
+                <span class="badge {{ service.status == 'active' ? 'badge-active' : 'badge-inactive' }}">
+                    {{ service.status }}
+                </span>
+                {% if service.prestataire.id == user.id or 'ROLE_ADMIN' in user.roles %}
+                    <form method="post" action="/services/{{ service.id }}/delete"
+                          onsubmit="return confirm('Supprimer ce service ?')">
+                        <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+{% endif %}
+{% endblock %}

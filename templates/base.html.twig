@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Marketplace API{% endblock %}</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<header>
+    <nav class="navbar">
+        <a class="brand" href="/">Marketplace API</a>
+        <div class="nav-links">
+            {% set current_user = app.session.get('user') %}
+            {% if current_user %}
+                <span class="nav-user">{{ current_user.firstName }} {{ current_user.lastName }}</span>
+                <a href="/dashboard">Dashboard</a>
+                <a href="/services">Services</a>
+                <a href="/demandes">Demandes</a>
+                <a href="/logout" class="btn btn-sm btn-outline-white">Déconnexion</a>
+            {% else %}
+                <a href="/services">Services</a>
+                <a href="/login">Connexion</a>
+                <a href="/register" class="btn btn-sm btn-outline-white">Inscription</a>
+            {% endif %}
+        </div>
+    </nav>
+</header>
+
+<main class="container">
+    {% block content %}{% endblock %}
+</main>
+
+<footer>
+    <p>Marketplace API — Symfony 8 · Interface de test</p>
+</footer>
+
+</body>
+</html>

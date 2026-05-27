@@ -1,0 +1,42 @@
+security:
+    password_hashers:
+        App\Entity\User:
+            algorithm: bcrypt
+            cost: 12
+
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        api:
+            pattern: ^/api
+            stateless: true
+            custom_authenticators:
+                - App\Security\JWTAuthenticator
+
+        main:
+            pattern: ^/
+            security: false
+
+    role_hierarchy:
+        ROLE_ADMIN:       [ROLE_PRESTATAIRE, ROLE_USER]
+        ROLE_PRESTATAIRE: [ROLE_USER]
+
+    access_control:
+        - { path: ^/api/auth,    roles: PUBLIC_ACCESS }
+        - { path: ^/api/services$,    roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/services/,    roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api,         roles: ROLE_USER }
+
+when@test:
+    security:
+        password_hashers:
+            App\Entity\User:
+                algorithm: plaintext
