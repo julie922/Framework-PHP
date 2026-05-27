@@ -267,7 +267,9 @@ class ResourceVoterTest extends TestCase
 
     private function tokenFor(User $user): TokenInterface
     {
-        $token = $this->createMock(TokenInterface::class);
+        // createStub() : on contrôle la valeur de retour sans vérifier le nombre d'appels
+        // → PHPUnit 13 n'émet pas de notice "no expectations configured"
+        $token = $this->createStub(TokenInterface::class);
         $token->method('getUser')->willReturn($user);
 
         return $token;
