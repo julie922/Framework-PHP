@@ -79,6 +79,12 @@ class PropositionService
         return $proposition;
     }
 
+    public function delete(Proposition $proposition): void
+    {
+        $this->em->remove($proposition);
+        $this->em->flush();
+    }
+
     public function serialize(Proposition $proposition): array
     {
         $data = [

@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Controller\Traits\ValidationTrait;
 use App\Entity\Demande;
 use App\Entity\User;
 use App\Repository\DemandeRepository;
@@ -20,6 +21,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 #[IsGranted('ROLE_USER')]
 class DemandeController extends AbstractController
 {
+    use ValidationTrait;
+
     public function __construct(
         private readonly DemandeRepository  $demandeRepository,
         private readonly DemandeService     $demandeService,
@@ -124,12 +127,4 @@ class DemandeController extends AbstractController
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
-    private function validationError(mixed $violations): JsonResponse
-    {
-        $errors = [];
-        foreach ($violations as $v) {
-            $errors[] = ['field' => $v->getPropertyPath(), 'message' => $v->getMessage()];
-        }
-        return new JsonResponse(['error' => 'Validation Error', 'violations' => $errors], Response::HTTP_BAD_REQUEST);
-    }
 }

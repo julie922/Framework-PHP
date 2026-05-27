@@ -59,7 +59,9 @@ class ResourceVoter extends Voter
         }
 
         if ($attribute === self::EDIT) {
-            return $proposition->getDemande()->getDemandeur()->getId() === $user->getId();
+            // Le demandeur peut accepter/refuser — le prestataire peut annuler sa propre proposition
+            return $proposition->getDemande()->getDemandeur()->getId() === $user->getId()
+                || $proposition->getPrestataire()->getId() === $user->getId();
         }
 
         // DELETE

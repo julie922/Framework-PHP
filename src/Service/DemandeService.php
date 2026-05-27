@@ -4,12 +4,14 @@ namespace App\Service;
 
 use App\Entity\Demande;
 use App\Entity\User;
+use App\Repository\PropositionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 class DemandeService
 {
     public function __construct(
         private readonly EntityManagerInterface $em,
+        private readonly PropositionRepository  $propositionRepository,
     ) {}
 
     public function create(User $demandeur, array $data): Demande
@@ -29,8 +31,11 @@ class DemandeService
 
     public function update(Demande $demande, array $data): Demande
     {
-        if ($demande->getStatus() !== Demande::STATUS_OUVERTE && empty($data['status'])) {
-            throw new \LogicException('Seules les demandes ouvertes peuvent être modifiées.');
+        // Les champs de contenu (titre, description…) ne sont modifiables que si la demande est ouverte.
+        // Le changement de statut seul est toujours autorisé (géré par applyStatusTransition).
+        $contentFields = array_intersect_key($data, array_flip(['title', 'description', 'category', 'budget']));
+        if (!empty($contentFields) && $demande->getStatus() !== Demande::STATUS_OUVERTE) {
+            throw new \LogicException('Seules les demandes ouvertes peuvent avoir leur contenu modifié.');
         }
 
         if (isset($data['title']))       $demande->setTitle($data['title']);
@@ -65,6 +70,11 @@ class DemandeService
         }
 
         $demande->setStatus($newStatus);
+
+        // Cascade : fermeture de la demande → toutes les propositions en attente sont annulées
+        if ($newStatus === Demande::STATUS_FERMEE) {
+            $this->propositionRepository->cancelAllPendingByDemande($demande);
+        }
     }
 
     public function serialize(Demande $demande, bool $withPropositions = false): array

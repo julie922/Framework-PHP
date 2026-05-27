@@ -56,4 +56,21 @@ class PropositionRepository extends ServiceEntityRepository
             ->getQuery()
             ->execute();
     }
+
+    /**
+     * Cascade : quand une demande est fermée, toutes les propositions en attente passent à "annulée".
+     */
+    public function cancelAllPendingByDemande(Demande $demande): void
+    {
+        $this->createQueryBuilder('p')
+            ->update()
+            ->set('p.status', ':cancelled')
+            ->where('p.demande = :demande')
+            ->andWhere('p.status = :pending')
+            ->setParameter('cancelled', Proposition::STATUS_ANNULEE)
+            ->setParameter('demande', $demande)
+            ->setParameter('pending', Proposition::STATUS_EN_ATTENTE)
+            ->getQuery()
+            ->execute();
+    }
 }

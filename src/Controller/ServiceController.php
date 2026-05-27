@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Controller\Traits\ValidationTrait;
 use App\Entity\Service;
 use App\Entity\User;
 use App\Repository\ServiceRepository;
@@ -19,6 +20,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 #[Route('/api/services')]
 class ServiceController extends AbstractController
 {
+    use ValidationTrait;
+
     public function __construct(
         private readonly ServiceRepository $serviceRepository,
         private readonly ServiceService    $serviceService,
@@ -125,12 +128,4 @@ class ServiceController extends AbstractController
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
-    private function validationError(mixed $violations): JsonResponse
-    {
-        $errors = [];
-        foreach ($violations as $v) {
-            $errors[] = ['field' => $v->getPropertyPath(), 'message' => $v->getMessage()];
-        }
-        return new JsonResponse(['error' => 'Validation Error', 'violations' => $errors], Response::HTTP_BAD_REQUEST);
-    }
 }

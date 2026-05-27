@@ -436,7 +436,7 @@ GET   /api/services/{id}
 **Routes authentifiées (JWT requis)**
 ```
 GET   /api/users/me
-PUT   /api/user/profile
+PUT   /api/users/me
 GET   /api/users/{id}
 
 GET   /api/demandes
@@ -493,7 +493,7 @@ return self::ACCESS_DENIED;
 | Méthode | Endpoint | Auth | Description |
 |---------|----------|------|-------------|
 | GET | `/api/users/me` | ✅ | Mon profil complet |
-| PUT | `/api/user/profile` | ✅ | Modifier mon profil |
+| PUT | `/api/users/me` | ✅ | Modifier mon profil |
 | GET | `/api/users/{id}` | ✅ | Profil public d'un utilisateur |
 
 ### 6.3 Services

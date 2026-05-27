@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Controller\Traits\ValidationTrait;
 use App\Service\AuthService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -14,6 +15,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 #[Route('/api/auth')]
 class AuthController extends AbstractController
 {
+    use ValidationTrait;
+
     public function __construct(
         private readonly AuthService       $authService,
         private readonly ValidatorInterface $validator,
@@ -99,12 +102,4 @@ class AuthController extends AbstractController
         ]);
     }
 
-    private function validationError(mixed $violations): JsonResponse
-    {
-        $errors = [];
-        foreach ($violations as $v) {
-            $errors[] = ['field' => $v->getPropertyPath(), 'message' => $v->getMessage()];
-        }
-        return new JsonResponse(['error' => 'Validation Error', 'violations' => $errors], Response::HTTP_BAD_REQUEST);
-    }
 }

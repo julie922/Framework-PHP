@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Controller\Traits\ValidationTrait;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -15,9 +16,12 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-#[Route('/api')]
+#[Route('/api/users')]
+#[IsGranted('ROLE_USER')]
 class UserController extends AbstractController
 {
+    use ValidationTrait;
+
     public function __construct(
         private readonly UserRepository              $userRepository,
         private readonly EntityManagerInterface      $em,
@@ -25,18 +29,21 @@ class UserController extends AbstractController
         private readonly ValidatorInterface          $validator,
     ) {}
 
-    #[Route('/user/profile', methods: ['GET'])]
-    #[IsGranted('ROLE_USER')]
-    public function profile(): JsonResponse
+    /**
+     * GET /api/users/me — Mon profil complet
+     */
+    #[Route('/me', methods: ['GET'])]
+    public function me(): JsonResponse
     {
         /** @var User $user */
         $user = $this->getUser();
-
         return new JsonResponse($this->serializeUser($user));
     }
 
-    #[Route('/user/profile', methods: ['PUT'])]
-    #[IsGranted('ROLE_USER')]
+    /**
+     * PUT /api/users/me — Modifier mon profil
+     */
+    #[Route('/me', methods: ['PUT'])]
     public function updateProfile(Request $request): JsonResponse
     {
         /** @var User $user */
@@ -52,11 +59,7 @@ class UserController extends AbstractController
         if (!empty($fields)) {
             $violations = $this->validator->validate($data, new Assert\Collection(array_filter($fields)));
             if (count($violations)) {
-                $errors = [];
-                foreach ($violations as $v) {
-                    $errors[] = ['field' => $v->getPropertyPath(), 'message' => $v->getMessage()];
-                }
-                return new JsonResponse(['error' => 'Validation Error', 'violations' => $errors], Response::HTTP_BAD_REQUEST);
+                return $this->validationError($violations);
             }
         }
 
@@ -69,17 +72,10 @@ class UserController extends AbstractController
         return new JsonResponse($this->serializeUser($user));
     }
 
-    #[Route('/users/me', methods: ['GET'])]
-    #[IsGranted('ROLE_USER')]
-    public function me(): JsonResponse
-    {
-        /** @var User $user */
-        $user = $this->getUser();
-        return new JsonResponse($this->serializeUser($user));
-    }
-
-    #[Route('/users/{id}', methods: ['GET'])]
-    #[IsGranted('ROLE_USER')]
+    /**
+     * GET /api/users/{id} — Profil public d'un autre utilisateur
+     */
+    #[Route('/{id}', methods: ['GET'])]
     public function show(string $id): JsonResponse
     {
         $user = $this->userRepository->find($id);

@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Controller\Traits\ValidationTrait;
 use App\Entity\Proposition;
 use App\Entity\User;
 use App\Repository\DemandeRepository;
@@ -21,6 +22,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 #[IsGranted('ROLE_USER')]
 class PropositionController extends AbstractController
 {
+    use ValidationTrait;
+
     public function __construct(
         private readonly PropositionRepository $propositionRepository,
         private readonly DemandeRepository     $demandeRepository,
@@ -123,12 +126,17 @@ class PropositionController extends AbstractController
         return new JsonResponse($this->propositionService->serialize($proposition));
     }
 
-    private function validationError(mixed $violations): JsonResponse
+    #[Route('/propositions/{id}', methods: ['DELETE'])]
+    public function delete(string $id): JsonResponse
     {
-        $errors = [];
-        foreach ($violations as $v) {
-            $errors[] = ['field' => $v->getPropertyPath(), 'message' => $v->getMessage()];
+        $proposition = $this->propositionRepository->find($id);
+        if (!$proposition) {
+            return new JsonResponse(['error' => 'Not Found', 'message' => "Proposition $id introuvable."], Response::HTTP_NOT_FOUND);
         }
-        return new JsonResponse(['error' => 'Validation Error', 'violations' => $errors], Response::HTTP_BAD_REQUEST);
+
+        $this->denyAccessUnlessGranted(ResourceVoter::DELETE, $proposition);
+        $this->propositionService->delete($proposition);
+
+        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 }
